@@ -1,0 +1,18 @@
+= vim-b2
+
+____
+Boost.Build support for vim
+____
+
+== Install
+
+== Usage
+
+== Maintainer
+Dmitry Arkhipov <grisumbras@gmail.com>
+
+== Contributing
+Patches welcome!
+
+== License
+link:LICENSE[BSL-1.0] (C) Dmitry Arkhipov
