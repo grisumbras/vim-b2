@@ -59,6 +59,14 @@ let b:undo_ftplugin .= ' | setlocal iskeyword<'
 " formatting options
 setlocal formatoptions+=qron1j
 
+" fold by braces
+setlocal foldmethod=syntax
+let b:undo_ftplugin .= ' | setlocal foldmethod<'
+
+" setting compiler to b2 to allow building with b2 easily
+compiler b2
+let b:undo_ftplugin .= ' | setlocal makeprg< | setlocal errorformat<'
+
 " restoring options
 let &cpo = s:cpo_save
 unlet s:cpo_save
