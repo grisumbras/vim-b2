@@ -1,130 +1,130 @@
-if exists("b:current_syntax")
-  finish
-endif
+if exists("b:current_syntax") | finish | endif
 
 sy clear
 sy case match
-setlocal iskeyword+=-
-setlocal iskeyword+=,
+sy sync minlines=100
+
+" various keywords
+sy keyword bjamRepeat for while
+sy keyword bjamConditional if switch
+sy keyword bjamStatement return include continue break
+sy keyword bjamKeyword rule actions in on default case bind existsing ignore
+sy keyword bjamKeyword piecemeal quietly together
+sy keyword bjamStructure class module
+sy keyword bjamScopeKeyword local
+
+" mark trailing and starting colon, semicolon and square bracket as errors,
+" since usually they indeed are
+sy match bjamFrontError '\(^\|\s\)\zs[:;\[]\S\+'
+sy match bjamBackError '\S\{-1,}[:;\]]\ze\($\|\s\)'
+
+" include Asciidoc syntax as a cluster
+syn include @bjamAsciidoc syntax/asciidoc.vim
+
+
+" Variable expansion
+" variable expansions are enclosed in $() and may contain other variable
+" expansions and may contain a subscript modifier or a keyword modifier at the
+" end
+sy region bjamVariableExpansion start='\$(' end=')' keepend extend contains=bjamVariableExpansion,bjamModifier,bjamSubscript
+
+" subscript modifiers are enclosed in square brackets and contain either an
+" index or a range
+sy region bjamSubscript matchgroup=bjamDelimiter start='\[' end='\]' contained keepend extend contains=bjamRangeStart
+" starting index may contain variable expansions and digits and may end with a
+" dash; everything else is highlighted as error
+sy match bjamRangeStart '[^-\]]\+' contained keepend extend transparent contains=bjamVariableExpansion,bjamNumber nextgroup=bjamRangeSeparator
+" range parts are separated by a dash
+sy match bjamRangeSeparator '-' contained nextgroup=bjamRangeEnd
+" optional ending index similarly contains variable expansions and digits and
+" goes to the end of the subscript
+sy match bjamRangeEnd '[^\]]*' contained keepend extend transparent contains=bjamVariableExpansion,bjamNumber
+sy match bjamNumber '\d\+' contained
+
+" keyword modifiers start with a colon and may contain variable expansions,
+" single-character modifiers or a single assignment to a modifier
+sy region bjamModifier matchgroup=bjamDelimiter start=':' end='\ze)' keepend contained contains=bjamVariableExpansion,bjamModifierMarker,bjamModifierAssignment
+sy match bjamModifierMarker "[BSMDPGULTWREJ]" contained
+" assignment part in particular may contain any list of strings
+sy region bjamModifierAssignment matchgroup=Special start='=' end='\ze)' keepend contained contains=@bjamExpression
+
+
+" string grists are enclosed in angle brackets and allow escaped symbols and
+" variable expansion
+sy match bjamGrist '<[^>]\+>' contains=@bjamStringPart
+
+
+" rule's parameter list is enclosed in parentheses
+sy region bjamRuleParameters matchgroup=bjamDelimiter start='\(^\|\s\)\zs(\ze\($\|\s\)' end='\(^\|\s\)\zs)\ze\($\|\s\)' contains=bjamListSeparator,bjamArgumentQuantifier,@bjamExpression
+sy match bjamArgumentQuantifier '\(^\|\s\)\zs[?*+]\ze\($\|\s\)'
+
+
+" Rule expansion
+" rule expansion is enclosed in square brackets
+sy region bjamRuleExpansion keepend extend skipwhite matchgroup=bjamDelimiter start='\(^\|\s\)\[\ze\($\|\s\)' end='\(^\|\s\)\]\ze\($\|\s\)' contains=@bjamExpression,bjamListSeparator
+sy match bjamListSeparator '\(^\|\s\)\zs:\ze\($\|\s\)'
+
+
+" Strings
+" highlight escaped characters
+sy match bjamEscapedChar '\\.'
+" strings are enclosed in double quotes and allow escaped characters and
+" variable expansion inside; quotes themselves are highlighted the same as
+" escaped characters; extend option is added in order to not preemptively
+" enclosing regions
+sy region bjamString extend matchgroup=bjamEscapedChar start='"' end='"' contains=@bjamStringPart
+
 
 " Comments
 sy keyword bjamTodo TODO FIXME XXX contained
 sy match bjamLineComment '#.*' contains=@Spell,bjamTodo
-sy match bjamCommentSkip '^\s*|\($\|\s\+\)'
-sy region bjamComment start='#|' end='|#' contains=@Spell,bjamTodo
-sy sync ccomment bjamComment
+sy region bjamBlockComment start='#|' end='|#' contains=@Spell,bjamTodo
+" allow Asciidoc highlight inside documentation tags
+sy region bjamDocComment start='#|\s*tag::doc\[\]' end='|#\s*#\s*end::doc\[\]' keepend contains=@Spell,@bjamAsciidoc
 
-" Strings
-sy region bjamString matchgroup=bjamStringSpecial start='"' end='"' skip='\\"' contains=@bjamStringElement
-sy cluster bjamStringElement contains=bjamStringSpecial,bjamVariable
-sy match bjamStringSpecial '\\.' contained
 
-sy match bjamRuleDefintion 'rule' nextgroup=bjamRuleName skipwhite
-sy match bjamRuleName '\S\+' contained nextgroup=bjamArgStart skipwhite
-sy match bjamArgStart "(" contained nextgroup=bjamArgName skipwhite
-sy match bjamArgName '\S\+' contained nextgroup=bjamArgSep
-sy match bjamArgSep '\:+' contained nextgroup=bjamArgSep
+sy cluster bjamAnyComment contains=bjamLineComment,bjamBlockComment,bjamDocComment
+sy cluster bjamStringPart contains=bjamVariableExpansion,bjamEscapedChar
+sy cluster bjamExpression contains=bjamString,bjamRuleExpansion,bjamGrist,@bjamStringPart,@bjamAnyComment
 
-" sy keyword bjamKeyword include rule actions bind updated together ignore
-" sy keyword bjamKeyword quietly piecemeal existing
-"
-" sy keyword bjamConditional if else switch
-"
-" sy keyword bjamLabel case
-"
-" sy keyword bjamRepeat while for
-"
-" sy keyword bjamOperator in on new
-"
-" sy keyword bjamStatement return break continue default
-"
-" sy keyword bjamLocal local
-"
-" sy keyword bjamScope module class
-"
-" sy keyword bjamBuiltin Always ALWAYS Depends DEPENDS echo Echo exit EXIT Glob
-" sy keyword bjamBuiltin GLOB GLOB-RECURSIVELY Includes INCLUDES REBUILDS
-" sy keyword bjamBuiltin SPLIT_BY_CHARACTERS NoCare NOTIME NotFile NOTFILE
-" sy keyword bjamBuiltin NoUpdate NOUPDATE Temporary TEMPORARY ISFILE HdrMacro
-" sy keyword bjamBuiltin HDRMACRO FAIL_EXPECTED RMOLD UPDATE subst SUBST
-" sy keyword bjamBuiltin RULENAMES VARNAMES DELETE_MODULE IMPORT EXPORT
-" sy keyword bjamBuiltin CALLER_MODULE BACKTRACE PWD IMPORT_MODULE
-" sy keyword bjamBuiltin IMPORTED_MODULES INSTANCE SORT NORMALIZE_PATH CALC
-" sy keyword bjamBuiltin NATIVE_RULE W32_GETREG W32_GETREGNAMES SHELL COMMAND
-" sy keyword bjamBuiltin MD5 FILE_OPEN PAD PRECIOUS SELF_PATH MAKEDIR READLINK
-" sy keyword bjamBuiltin GLOB_ARCHIVE import using peek poke record-binding
-" sy keyword bjamBuiltin project use-project build-project explicit
-" sy keyword bjamBuiltin check-target-builds glob glob-tree always constant
-" sy keyword bjamBuiltin path-constant
-"
-" sy keyword bjamMainTarget exe lib alias obj explicit install make notfile
-" sy keyword bjamMainTarget unit-test compile compile-fail link link-fail run
-" sy keyword bjamMainTarget run-fail
-"
-" sy match bjamModifier ":" contained
-" sy region bjamVariable start='\$(' end=')' contains=bjamVariable,bjamModifier
-" sy match bjamGrist '<[^>]*>'
-"
-" " " Errors
-" " " semicolons can't be preceded or followed by anything but whitespace
-" " sy match jamSemiError "[^ \t];"hs=s+1
-" " sy match jamSemiError ";[^ \t]"he=e-1
-" " " colons must either have whitespace on both sides (separating clauses of
-" " " rules) or on neither side (e.g. <variant>release:<define>NDEBUG)
-" " sy match jamColonError "[^ \t]:[ \t]"hs=s+2
-" " sy match jamColonError "[ \t]:[^ \t]"he=e-2
-" "
-" sy region bjamBracedFold start="{" end="}" transparent fold
-" " sy region bjamCommentFold start="#|" end="|#" transparent fold
-" sy sync fromstart
-"
-"
-" "   hi link jamSemiError jamError
-" "   hi link jamColonError jamError
+hi def link bjamDelimiter Delimiter
+hi def link bjamListSeparator Delimiter
+hi def link bjamArgumentQuantifier Delimiter
+hi def link bjamEscapedChar Special
 
-hi def link bjamComment Comment
-hi def link bjamLineComment Comment
-hi def link bjamTodo Todo
+hi def link bjamRepeat Repeat
+hi def link bjamConditional Conditional
+hi def link bjamKeyword Keyword
+hi def link bjamStructure Structure
+hi def link bjamStatement Statement
+hi def link bjamScopeKeyword StorageClass
+
+hi def link bjamVariableExpansion Identifier
+
+hi def link bjamGrist Type
+
+hi def link bjamRuleRef Function
+hi def link bjamActionName Function
+
+hi def link bjamModifierMarker Constant
+hi def link bjamNumber Number
+hi def link bjamSubscript Error
+hi def link bjamRangeSeparator Special
+
+hi def link bjamInclude Include
+
 hi def link bjamString String
-hi def link bjamStringSpecial Special
-hi def link bjamRuleDefintion Statement
-hi def link bjamRuleName Function
-" hi def link bjamKeyword Keyword
-" hi def link bjamConditional Conditional
-" hi def link bjamLabel Label
-" hi def link bjamRepeat Repeat
-" hi def link bjamBuiltin Function
-" hi def link bjamMainTarget Type
-" hi def link bjamOperator Operator
-" hi def link bjamStatement Statement
-" hi def link bjamVariable Identifier
-" hi def link bjamGrist Identifier
-" hi def link bjamLocal StorageClass
-" hi def link bjamScope Structure
-" hi def link bjamModifier Delimiter
-"   hi link jamRule Keyword
-"   hi link jamPseudo Keyword
-"
-"   hi link jamError Error
-" endif
+
+hi def link bjamLineComment Comment
+hi def link bjamBlockComment Comment
+hi def link bjamDocComment Comment
+hi def link bjamTodo Todo
+
+hi def link bjamFrontError Error
+hi def link bjamBackError Error
+hi def link bjamJump Error
+
+sy region bjamBracedFold start='{' end='}' transparent fold
+
 
 let b:current_syntax = "bjam"
-
-" *Constant	any constant
-"  Function	function name (also: methods for classes)
-"  Exception	try, catch, throw
-"  Include	preprocessor #include
-"  Define		preprocessor #define
-"  Macro		same as Define
-"  PreCondit	preprocessor #if, #else, #endif, etc.
-"  Typedef	A typedef
-" *Special	any special symbol
-"  SpecialChar	special character in a constant
-"  Tag		you can use CTRL-] on this
-"  Delimiter	character that needs attention
-"  SpecialComment	special things inside a comment
-"  Debug		debugging statements
-" *Underlined	text that stands out, HTML links
-" *Ignore		left blank, hidden  |hl-Ignore|
-" *Error		any erroneous construct
-" 		keywords TODO FIXME and XXX
