@@ -99,6 +99,7 @@ hi def link bjamActionName Function
 
 hi def link bjamModifierMarker Constant
 hi def link bjamNumber Number
+hi def link bjamModifier Error
 hi def link bjamRangeStart Error
 hi def link bjamRangeEnd Error
 
