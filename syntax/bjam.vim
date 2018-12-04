@@ -26,28 +26,19 @@ syn include @bjamAsciidoc syntax/asciidoc.vim
 " variable expansions are enclosed in $() and may contain other variable
 " expansions and may contain a subscript modifier or a keyword modifier at the
 " end
-sy region bjamVariableExpansion start='\$(' end=')' keepend extend contains=bjamVariableExpansion,bjamModifier,bjamSubscript
-
-" subscript modifiers are enclosed in square brackets and contain either an
-" index or a range
-sy region bjamSubscript matchgroup=bjamDelimiter start='\[' end='\]' contained keepend extend contains=bjamRangeStart
-" starting index may contain variable expansions and digits and may end with a
-" dash; everything else is highlighted as error
-sy match bjamRangeStart '[^-\]]\+' contained keepend extend transparent contains=bjamVariableExpansion,bjamNumber nextgroup=bjamRangeSeparator
-" range parts are separated by a dash
-sy match bjamRangeSeparator '-' contained nextgroup=bjamRangeEnd
-" optional ending index similarly contains variable expansions and digits and
-" goes to the end of the subscript
-sy match bjamRangeEnd '[^\]]*' contained keepend extend transparent contains=bjamVariableExpansion,bjamNumber
-sy match bjamNumber '\d\+' contained
+sy region bjamVariableExpansion start='\$(' end=')' keepend extend contains=bjamVariableExpansion,bjamModifier,bjamRangeStart
 
 " keyword modifiers start with a colon and may contain variable expansions,
 " single-character modifiers or a single assignment to a modifier
-sy region bjamModifier matchgroup=bjamDelimiter start=':' end='\ze)' keepend contained contains=bjamVariableExpansion,bjamModifierMarker,bjamModifierAssignment
+sy region bjamModifier matchgroup=bjamDelimiter start=':' end='\ze)' keepend extend contained contains=bjamVariableExpansion,bjamModifierMarker,bjamModifierAssignment
 sy match bjamModifierMarker "[BSMDPGULTWREJ]" contained
 " assignment part in particular may contain any list of strings
 sy region bjamModifierAssignment matchgroup=Special start='=' end='\ze)' keepend contained contains=@bjamExpression
 
+
+sy region bjamRangeStart contained keepend extend matchgroup=bjamDelimiter start='\[' end='\]\|\(\ze-\)' contains=bjamVariableExpansion,bjamNumber nextgroup=bjamRangeEnd
+sy region bjamRangeEnd contained keepend extend matchgroup=bjamDelimiter start='-' end='\]' contains=bjamVariableExpansion,bjamNumber
+sy match bjamNumber '\d\+' contained
 
 " string grists are enclosed in angle brackets and allow escaped symbols and
 " variable expansion
@@ -108,8 +99,8 @@ hi def link bjamActionName Function
 
 hi def link bjamModifierMarker Constant
 hi def link bjamNumber Number
-hi def link bjamSubscript Error
-hi def link bjamRangeSeparator Special
+hi def link bjamRangeStart Error
+hi def link bjamRangeEnd Error
 
 hi def link bjamInclude Include
 
