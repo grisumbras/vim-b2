@@ -15,8 +15,8 @@ sy keyword bjamScopeKeyword local
 
 " mark trailing and starting colon, semicolon and square bracket as errors,
 " since usually they indeed are
-sy match bjamFrontError '\(^\|\s\)\zs[:;\[]\S\+'
-sy match bjamBackError '\S\{-1,}[:;\]]\ze\($\|\s\)'
+sy match bjamFrontError '\(^\|\s\)\zs[:;\[]\S'
+sy match bjamBackError '\S[:;\]]\ze\($\|\s\)'
 
 " include Asciidoc syntax as a cluster
 syn include @bjamAsciidoc syntax/asciidoc.vim
