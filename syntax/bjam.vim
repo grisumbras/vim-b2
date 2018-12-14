@@ -6,7 +6,7 @@ sy sync minlines=100
 
 " various keywords
 sy keyword bjamRepeat for while
-sy keyword bjamConditional if switch
+sy keyword bjamConditional if switch else
 sy keyword bjamStatement return include continue break
 sy keyword bjamKeyword rule actions in on default case bind existsing ignore
 sy keyword bjamKeyword piecemeal quietly together
